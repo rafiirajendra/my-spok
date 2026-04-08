@@ -1,0 +1,113 @@
+@import "tailwindcss";
+
+:root {
+  --background: #fff8fc;
+  --foreground: #4d4361;
+  --surface: #ffffff;
+  --surface-muted: #fff1f8;
+  --surface-soft: #f6f4ff;
+  --primary: #f39abb;
+  --primary-strong: #e26d9c;
+  --secondary: #bcb2ff;
+  --sky: #cdeeff;
+  --peach: #ffd7c7;
+  --success: #7ac7a0;
+  --danger: #ff8ba7;
+  --border: #f3d8e7;
+  --ring: rgba(226, 109, 156, 0.22);
+  --font-body: "Trebuchet MS", "Verdana", sans-serif;
+  --font-heading: "Arial Rounded MT Bold", "Trebuchet MS", sans-serif;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+  --color-surface-soft: var(--surface-soft);
+  --color-primary: var(--primary);
+  --color-primary-strong: var(--primary-strong);
+  --color-secondary: var(--secondary);
+  --color-sky: var(--sky);
+  --color-peach: var(--peach);
+  --color-success: var(--success);
+  --color-danger: var(--danger);
+  --color-border: var(--border);
+  --font-sans: var(--font-body);
+  --font-heading: var(--font-heading);
+}
+
+* {
+  border-color: var(--border);
+}
+
+html {
+  background:
+    radial-gradient(circle at top left, rgba(255, 215, 231, 0.75), transparent 30%),
+    radial-gradient(circle at top right, rgba(205, 238, 255, 0.7), transparent 25%),
+    linear-gradient(180deg, #fff9fd 0%, #fff6fb 48%, #f8f8ff 100%);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-body), sans-serif;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-heading), sans-serif;
+}
+
+::selection {
+  background: rgba(243, 154, 187, 0.28);
+}
+
+.card-shadow {
+  box-shadow:
+    0 16px 40px rgba(244, 185, 210, 0.18),
+    0 4px 12px rgba(93, 75, 132, 0.06);
+}
+
+.soft-grid {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.58) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.58) 1px, transparent 1px);
+  background-size: 26px 26px;
+}
+
+.blob {
+  filter: blur(2px);
+  opacity: 0.75;
+}
+
+.animate-float {
+  animation: float 5.4s ease-in-out infinite;
+}
+
+.animate-pop-in {
+  animation: popIn 0.35s ease-out;
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes popIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
