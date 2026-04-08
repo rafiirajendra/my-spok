@@ -9,12 +9,14 @@ import {
   NotebookText,
   Sparkles,
   Type,
+  User,
 } from "lucide-react";
 import { dashboardLinks } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
 const iconMap = {
   Ringkasan: LayoutDashboard,
+  Profil: User,
   Kategori: Layers2,
   Level: Sparkles,
   Kata: Type,

@@ -27,7 +27,9 @@ export default async function AdminLayout({
         <div className="card-shadow rounded-[32px] border border-white/70 bg-white/85 p-5 backdrop-blur-xl">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
-              <p className="text-sm font-bold text-primary-strong">Halo, {profile?.full_name ?? "Guru"}</p>
+              <p className="text-sm font-bold text-primary-strong">
+                Halo, {profile?.full_name || profile?.email || "Guru"}
+              </p>
               <h1 className="font-heading text-3xl font-semibold">Dashboard pengelolaan belajar</h1>
             </div>
 

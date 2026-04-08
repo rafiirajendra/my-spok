@@ -54,9 +54,10 @@ Catatan:
 1. Buat project baru di Supabase.
 2. Jalankan isi [schema.sql](/d:/Coolyeah-Mengoding/my-spok/supabase/schema.sql).
 3. Jalankan isi [rls.sql](/d:/Coolyeah-Mengoding/my-spok/supabase/rls.sql).
-4. Pastikan bucket `sign-language-gifs` tersedia.
-5. Buat user guru/admin lewat Supabase Auth.
-6. Saat user dibuat, trigger akan otomatis membuat data `profiles`.
+4. Jalankan [seed.sql](/d:/Coolyeah-Mengoding/my-spok/supabase/seed.sql) jika ingin data contoh awal.
+5. Pastikan bucket `sign-language-gifs` tersedia.
+6. Buat user guru/admin lewat Supabase Auth.
+7. Saat user dibuat, trigger akan otomatis membuat data `profiles`.
 
 ## Menjalankan lokal
 
