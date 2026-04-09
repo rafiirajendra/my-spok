@@ -4,12 +4,15 @@ import { useState, useTransition } from "react";
 import {
   closestCenter,
   DndContext,
+  DragOverlay,
+  PointerActivationConstraint,
   KeyboardSensor,
   PointerSensor,
   useDroppable,
   useSensor,
   useSensors,
   type DragEndEvent,
+  type DragStartEvent,
 } from "@dnd-kit/core";
 import {
   SortableContext,
@@ -23,7 +26,10 @@ import { scoreToLabel } from "@/lib/utils";
 import type { ExerciseItem, StudentSession } from "@/types/app";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { SortableWordChip } from "@/components/student/sortable-word-chip";
+import {
+  DragWordChipPreview,
+  SortableWordChip,
+} from "@/components/student/sortable-word-chip";
 import { WordPreviewModal } from "@/components/student/word-preview-modal";
 
 function DroppableArea({
@@ -67,6 +73,7 @@ export function ExercisePlayer({
 }: ExercisePlayerProps) {
   const router = useRouter();
   const [errorMessage, setErrorMessage] = useState("");
+  const [activeWordId, setActiveWordId] = useState<string | null>(null);
   const [isSaving, startSaving] = useTransition();
   const {
     currentIndex,
@@ -92,7 +99,7 @@ export function ExercisePlayer({
     useSensor(PointerSensor, {
       activationConstraint: {
         distance: 8,
-      },
+      } satisfies PointerActivationConstraint,
     }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
@@ -107,11 +114,31 @@ export function ExercisePlayer({
     );
   }
 
+  const activeDraggedWord =
+    [...bankWords, ...answerWords].find((word) => word.id === activeWordId) ?? null;
+  const activeDraggedWordInAnswer = Boolean(
+    activeDraggedWord && answerWords.some((word) => word.id === activeDraggedWord.id),
+  );
+
+  function handleDragStart(event: DragStartEvent) {
+    setActiveWordId(String(event.active.id));
+  }
+
+  function handleDragCancel() {
+    setActiveWordId(null);
+  }
+
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
-    if (!over) return;
+    if (!over) {
+      setActiveWordId(null);
+      return;
+    }
 
-    if (active.id === over.id) return;
+    if (active.id === over.id) {
+      setActiveWordId(null);
+      return;
+    }
 
     const activeInAnswer = answerWords.some((word) => word.id === active.id);
     const overInAnswer =
@@ -121,10 +148,12 @@ export function ExercisePlayer({
 
     if ((activeInAnswer && overInAnswer) || (activeInBank && overInBank)) {
       reorderInContainer(String(active.id), String(over.id));
+      setActiveWordId(null);
       return;
     }
 
     moveBetweenContainers(String(active.id), String(over.id));
+    setActiveWordId(null);
   }
 
   async function finishExercise() {
@@ -159,7 +188,9 @@ export function ExercisePlayer({
     <>
       <DndContext
         collisionDetection={closestCenter}
+        onDragCancel={handleDragCancel}
         onDragEnd={handleDragEnd}
+        onDragStart={handleDragStart}
         sensors={sensors}
       >
         <div className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
@@ -332,6 +363,14 @@ export function ExercisePlayer({
           </Card>
         </div>
         </div>
+        <DragOverlay>
+          {activeDraggedWord ? (
+            <DragWordChipPreview
+              inAnswer={activeDraggedWordInAnswer}
+              word={activeDraggedWord}
+            />
+          ) : null}
+        </DragOverlay>
       </DndContext>
 
       <WordPreviewModal onClose={() => setPreviewWord(null)} word={previewWord} />
