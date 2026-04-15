@@ -12,7 +12,33 @@ export default async function PracticePage({
   const { sessionId } = await params;
   const payload = await getPracticePayload(sessionId);
 
-  if (!payload || !payload.exercise) {
+  if (!payload) {
+    return (
+      <main className="mx-auto flex min-h-screen w-full max-w-5xl items-center px-5 py-10 md:px-8">
+        <Card className="w-full rounded-[36px] text-center">
+          <PartyPopper className="mx-auto h-14 w-14 text-primary-strong" />
+          <h1 className="mt-4 font-heading text-3xl font-semibold">
+            Sesi latihan tidak ditemukan
+          </h1>
+          <p className="mt-3 text-sm leading-7 text-foreground/75 md:text-base">
+            Tautan latihan ini sudah tidak valid atau sesi belum berhasil dibuat. Silakan kembali
+            lalu mulai latihan lagi dari halaman siswa.
+          </p>
+          <div className="mt-6">
+            <Link
+              className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-3 font-bold text-white"
+              href="/student"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Kembali
+            </Link>
+          </div>
+        </Card>
+      </main>
+    );
+  }
+
+  if (!payload.exercise) {
     return (
       <main className="mx-auto flex min-h-screen w-full max-w-5xl items-center px-5 py-10 md:px-8">
         <Card className="w-full rounded-[36px] text-center">

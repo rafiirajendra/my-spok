@@ -71,19 +71,19 @@ export async function getPracticePayload(sessionId: string): Promise<PracticePay
   }
 
   const supabase = await createSupabaseServerClient();
-  const [{ data: level }, { data: exercise }, { data: words }] = await Promise.all([
+  const [{ data: level }, { data: exercises }, { data: words }] = await Promise.all([
     supabase.from("levels").select("*").eq("id", session.level_id).single(),
     supabase
       .from("exercises")
       .select("*")
       .eq("level_id", session.level_id)
-      .order("created_at")
-      .limit(1)
-      .single(),
+      .order("created_at", { ascending: false }),
     supabase.from("words").select("*").eq("level_id", session.level_id),
   ]);
 
-  if (!exercise) {
+  const exerciseRows = (exercises as Exercise[]) ?? [];
+
+  if (!exerciseRows.length) {
     return {
       session,
       level: (level as Level | null) ?? null,
@@ -95,18 +95,40 @@ export async function getPracticePayload(sessionId: string): Promise<PracticePay
   const { data: items } = await supabase
     .from("exercise_items")
     .select("*")
-    .eq("exercise_id", exercise.id)
+    .in(
+      "exercise_id",
+      exerciseRows.map((exercise) => exercise.id),
+    )
     .order("order_number");
+
+  const itemsByExerciseId = new Map<string, ExerciseItem[]>();
+  for (const item of asExerciseItems(items)) {
+    const currentItems = itemsByExerciseId.get(item.exercise_id) ?? [];
+    currentItems.push(item);
+    itemsByExerciseId.set(item.exercise_id, currentItems);
+  }
+
+  const exercise =
+    exerciseRows.find((entry) => (itemsByExerciseId.get(entry.id)?.length ?? 0) > 0) ?? null;
 
   const wordGifMap = new Map(
     ((words as Word[]) ?? []).map((word) => [word.word.toLowerCase(), word.gif_url]),
   );
 
+  if (!exercise) {
+    return {
+      session,
+      level: (level as Level | null) ?? null,
+      exercise: null,
+      items: [],
+    };
+  }
+
   return {
     session,
     level: (level as Level | null) ?? null,
-    exercise: exercise as Exercise,
-    items: asExerciseItems(items).map((item) => ({
+    exercise,
+    items: (itemsByExerciseId.get(exercise.id) ?? []).map((item) => ({
       ...item,
       words_options: Array.isArray(item.words_options)
         ? item.words_options.map((option) => ({
