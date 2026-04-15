@@ -65,9 +65,6 @@ export default async function ResultPage({
             <p className="mt-2 font-heading text-4xl font-semibold">
               {result.level?.name ?? "-"}
             </p>
-            <p className="mt-2 text-sm text-foreground/70">
-              {result.category?.name ?? "Kategori pilihan"}
-            </p>
           </div>
         </div>
       </Card>

@@ -1,15 +1,7 @@
 export type Role = "admin" | "teacher";
 
-export type Category = {
-  id: string;
-  name: string;
-  description: string | null;
-  created_at: string;
-};
-
 export type Level = {
   id: string;
-  category_id: string;
   name: string;
   order_number: number;
   created_at: string;
@@ -50,7 +42,6 @@ export type StudentSession = {
   id: string;
   student_name: string;
   student_class: string | null;
-  category_id: string;
   level_id: string;
   created_at: string;
 };
@@ -85,13 +76,11 @@ export type Profile = {
 };
 
 export type StudentCatalog = {
-  categories: Category[];
   levels: Level[];
 };
 
 export type PracticePayload = {
   session: StudentSession;
-  category: Category | null;
   level: Level | null;
   exercise: Exercise | null;
   items: ExerciseItem[];
@@ -101,7 +90,6 @@ export type AttemptResultSummary = {
   attempt: Attempt;
   session: StudentSession;
   exercise: Exercise | null;
-  category: Category | null;
   level: Level | null;
   answers: Array<
     AttemptAnswer & {
@@ -112,7 +100,6 @@ export type AttemptResultSummary = {
 };
 
 export type DashboardStats = {
-  categories: number;
   levels: number;
   words: number;
   exercises: number;
@@ -123,7 +110,6 @@ export type DashboardResultRow = {
   attempt_id: string;
   student_name: string;
   student_class: string | null;
-  category_name: string | null;
   level_name: string | null;
   score: number;
   correct_answers: number;

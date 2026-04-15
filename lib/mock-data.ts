@@ -2,7 +2,6 @@ import type {
   Attempt,
   AttemptAnswer,
   AttemptResultSummary,
-  Category,
   DashboardResultRow,
   DashboardStats,
   Exercise,
@@ -16,41 +15,23 @@ import type {
 
 const now = new Date().toISOString();
 
-export const mockCategories: Category[] = [
-  {
-    id: "cat-1",
-    name: "Aktivitas Harian",
-    description: "Kalimat sederhana tentang kegiatan sehari-hari anak.",
-    created_at: now,
-  },
-  {
-    id: "cat-2",
-    name: "Sekolah",
-    description: "Kosakata ringan seputar kelas, guru, dan belajar.",
-    created_at: now,
-  },
-];
-
 export const mockLevels: Level[] = [
   {
     id: "lvl-1",
-    category_id: "cat-1",
     name: "Level 1",
     order_number: 1,
     created_at: now,
   },
   {
     id: "lvl-2",
-    category_id: "cat-1",
     name: "Level 2",
     order_number: 2,
     created_at: now,
   },
   {
     id: "lvl-3",
-    category_id: "cat-2",
-    name: "Level 1",
-    order_number: 1,
+    name: "Level 3",
+    order_number: 3,
     created_at: now,
   },
 ];
@@ -102,7 +83,6 @@ export const mockExerciseItems: ExerciseItem[] = [
 ];
 
 export const mockCatalog: StudentCatalog = {
-  categories: mockCategories,
   levels: mockLevels,
 };
 
@@ -110,14 +90,12 @@ export const mockSession: StudentSession = {
   id: "session-demo",
   student_name: "Maya",
   student_class: "2A",
-  category_id: "cat-1",
   level_id: "lvl-1",
   created_at: now,
 };
 
 export const mockPracticePayload: PracticePayload = {
   session: mockSession,
-  category: mockCategories[0],
   level: mockLevels[0],
   exercise: mockExercises[0],
   items: mockExerciseItems,
@@ -164,13 +142,11 @@ export const mockAttemptSummary: AttemptResultSummary = {
   attempt: mockAttempt,
   session: mockSession,
   exercise: mockExercises[0],
-  category: mockCategories[0],
   level: mockLevels[0],
   answers: mockAnswers,
 };
 
 export const mockDashboardStats: DashboardStats = {
-  categories: mockCategories.length,
   levels: mockLevels.length,
   words: mockWords.length,
   exercises: mockExercises.length,
@@ -182,7 +158,6 @@ export const mockDashboardResults: DashboardResultRow[] = [
     attempt_id: "attempt-1",
     student_name: "Maya",
     student_class: "2A",
-    category_name: "Aktivitas Harian",
     level_name: "Level 1",
     score: 100,
     correct_answers: 2,
@@ -193,8 +168,7 @@ export const mockDashboardResults: DashboardResultRow[] = [
     attempt_id: "attempt-2",
     student_name: "Rafi",
     student_class: "1B",
-    category_name: "Sekolah",
-    level_name: "Level 1",
+    level_name: "Level 3",
     score: 75,
     correct_answers: 3,
     total_questions: 4,

@@ -7,13 +7,7 @@ import { hasSupabaseEnv } from "@/lib/env";
 import { uploadGifToStorage } from "@/lib/storage";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
-const categorySchema = z.object({
-  name: z.string().min(2),
-  description: z.string().optional(),
-});
-
 const levelSchema = z.object({
-  category_id: z.string().min(1),
   name: z.string().min(2),
   order_number: z.coerce.number().min(1),
 });
@@ -34,65 +28,8 @@ async function getSupabaseForAdmin() {
   return hasSupabaseEnv() ? createSupabaseServerClient() : null;
 }
 
-export async function createCategoryAction(formData: FormData) {
-  const parsed = categorySchema.safeParse({
-    name: formData.get("name"),
-    description: formData.get("description"),
-  });
-
-  if (!parsed.success) return;
-  const supabase = await getSupabaseForAdmin();
-
-  if (supabase) {
-    await supabase.from("categories").insert({
-      name: parsed.data.name,
-      description: parsed.data.description || null,
-    });
-  }
-
-  revalidatePath("/admin");
-  revalidatePath("/admin/categories");
-}
-
-export async function updateCategoryAction(formData: FormData) {
-  const id = String(formData.get("id") ?? "");
-  const parsed = categorySchema.safeParse({
-    name: formData.get("name"),
-    description: formData.get("description"),
-  });
-
-  if (!id || !parsed.success) return;
-  const supabase = await getSupabaseForAdmin();
-
-  if (supabase) {
-    await supabase
-      .from("categories")
-      .update({
-        name: parsed.data.name,
-        description: parsed.data.description || null,
-      })
-      .eq("id", id);
-  }
-
-  revalidatePath("/admin/categories");
-}
-
-export async function deleteCategoryAction(formData: FormData) {
-  const id = String(formData.get("id") ?? "");
-  if (!id) return;
-
-  const supabase = await getSupabaseForAdmin();
-  if (supabase) {
-    await supabase.from("categories").delete().eq("id", id);
-  }
-
-  revalidatePath("/admin");
-  revalidatePath("/admin/categories");
-}
-
 export async function createLevelAction(formData: FormData) {
   const parsed = levelSchema.safeParse({
-    category_id: formData.get("category_id"),
     name: formData.get("name"),
     order_number: formData.get("order_number"),
   });
@@ -111,7 +48,6 @@ export async function createLevelAction(formData: FormData) {
 export async function updateLevelAction(formData: FormData) {
   const id = String(formData.get("id") ?? "");
   const parsed = levelSchema.safeParse({
-    category_id: formData.get("category_id"),
     name: formData.get("name"),
     order_number: formData.get("order_number"),
   });

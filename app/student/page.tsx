@@ -19,9 +19,8 @@ export default async function StudentEntryPage() {
             Sebelum mulai, isi identitas dulu ya.
           </h1>
           <p className="mt-4 max-w-xl text-base leading-8 text-foreground/75">
-            Masukkan nama, pilih kategori, dan tentukan level belajar. Setelah
-            itu kamu bisa langsung menyusun kalimat dengan cara klik atau drag
-            and drop.
+            Masukkan nama lalu pilih level belajar. Setelah itu kamu bisa
+            langsung menyusun kalimat dengan cara klik atau drag and drop.
           </p>
 
           <div className="mt-8 space-y-4">

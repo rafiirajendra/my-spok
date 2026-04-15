@@ -4,7 +4,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
-  Layers2,
   ListChecks,
   NotebookText,
   Sparkles,
@@ -17,7 +16,6 @@ import { cn } from "@/lib/utils";
 const iconMap = {
   Ringkasan: LayoutDashboard,
   Profil: User,
-  Kategori: Layers2,
   Level: Sparkles,
   Kata: Type,
   Latihan: NotebookText,

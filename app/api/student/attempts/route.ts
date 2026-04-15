@@ -32,10 +32,12 @@ export async function POST(request: Request) {
   const score = Math.round((correctAnswers / totalQuestions) * 100);
   const startedAt = new Date().toISOString();
   const finishedAt = new Date().toISOString();
+  const attemptId = crypto.randomUUID();
 
-  const { data: attempt, error: attemptError } = await supabase
+  const { error: attemptError } = await supabase
     .from("attempts")
     .insert({
+      id: attemptId,
       student_session_id: parsed.data.student_session_id,
       exercise_id: parsed.data.exercise_id,
       score,
@@ -43,17 +45,15 @@ export async function POST(request: Request) {
       correct_answers: correctAnswers,
       started_at: startedAt,
       finished_at: finishedAt,
-    })
-    .select("id")
-    .single();
+    });
 
-  if (attemptError || !attempt) {
+  if (attemptError) {
     return Response.json({ message: "Gagal menyimpan attempt." }, { status: 500 });
   }
 
   const { error: answersError } = await supabase.from("attempt_answers").insert(
     parsed.data.answers.map((answer) => ({
-      attempt_id: attempt.id,
+      attempt_id: attemptId,
       exercise_item_id: answer.exercise_item_id,
       student_answer: answer.student_answer,
       is_correct: answer.is_correct,
@@ -64,5 +64,5 @@ export async function POST(request: Request) {
     return Response.json({ message: "Gagal menyimpan detail jawaban." }, { status: 500 });
   }
 
-  return Response.json({ attemptId: attempt.id });
+  return Response.json({ attemptId });
 }

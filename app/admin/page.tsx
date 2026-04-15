@@ -1,10 +1,10 @@
-import { BookOpenText, Layers3, Shapes, Sparkles, Users } from "lucide-react";
+import { BookOpenText, Shapes, Sparkles, Users } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { requireTeacherProfile } from "@/lib/auth";
 import { getDashboardStats, getResults } from "@/lib/queries";
 import { formatDate } from "@/lib/utils";
 
-const iconMap = [Layers3, Sparkles, Shapes, BookOpenText, Users];
+const iconMap = [Sparkles, Shapes, BookOpenText, Users];
 
 export default async function AdminOverviewPage() {
   await requireTeacherProfile();
@@ -12,7 +12,6 @@ export default async function AdminOverviewPage() {
   const results = await getResults();
 
   const cards = [
-    { label: "Kategori", value: stats.categories },
     { label: "Level", value: stats.levels },
     { label: "Kata", value: stats.words },
     { label: "Latihan", value: stats.exercises },
@@ -44,7 +43,6 @@ export default async function AdminOverviewPage() {
             <thead>
               <tr className="text-sm text-foreground/60">
                 <th className="pb-3 pr-4">Nama</th>
-                <th className="pb-3 pr-4">Kategori</th>
                 <th className="pb-3 pr-4">Level</th>
                 <th className="pb-3 pr-4">Skor</th>
                 <th className="pb-3">Selesai</th>
@@ -54,7 +52,6 @@ export default async function AdminOverviewPage() {
               {results.slice(0, 5).map((row) => (
                 <tr className="border-t border-border/70 text-sm md:text-base" key={row.attempt_id}>
                   <td className="py-4 pr-4 font-bold">{row.student_name}</td>
-                  <td className="py-4 pr-4">{row.category_name ?? "-"}</td>
                   <td className="py-4 pr-4">{row.level_name ?? "-"}</td>
                   <td className="py-4 pr-4">{row.score}</td>
                   <td className="py-4">{formatDate(row.finished_at)}</td>

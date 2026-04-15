@@ -11,58 +11,26 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      categories: {
-        Row: {
-          created_at: string;
-          description: string | null;
-          id: string;
-          name: string;
-        };
-        Insert: {
-          created_at?: string;
-          description?: string | null;
-          id?: string;
-          name: string;
-        };
-        Update: {
-          created_at?: string;
-          description?: string | null;
-          id?: string;
-          name?: string;
-        };
-        Relationships: [];
-      };
       levels: {
         Row: {
-          category_id: string;
           created_at: string;
           id: string;
           name: string;
           order_number: number;
         };
         Insert: {
-          category_id: string;
           created_at?: string;
           id?: string;
           name: string;
           order_number: number;
         };
         Update: {
-          category_id?: string;
           created_at?: string;
           id?: string;
           name?: string;
           order_number?: number;
         };
-        Relationships: [
-          {
-            foreignKeyName: "levels_category_id_fkey";
-            columns: ["category_id"];
-            isOneToOne: false;
-            referencedRelation: "categories";
-            referencedColumns: ["id"];
-          },
-        ];
+        Relationships: [];
       };
       words: {
         Row: {
@@ -165,7 +133,6 @@ export type Database = {
       };
       student_sessions: {
         Row: {
-          category_id: string;
           created_at: string;
           id: string;
           level_id: string;
@@ -173,7 +140,6 @@ export type Database = {
           student_name: string;
         };
         Insert: {
-          category_id: string;
           created_at?: string;
           id?: string;
           level_id: string;
@@ -181,7 +147,6 @@ export type Database = {
           student_name: string;
         };
         Update: {
-          category_id?: string;
           created_at?: string;
           id?: string;
           level_id?: string;
@@ -189,13 +154,6 @@ export type Database = {
           student_name?: string;
         };
         Relationships: [
-          {
-            foreignKeyName: "student_sessions_category_id_fkey";
-            columns: ["category_id"];
-            isOneToOne: false;
-            referencedRelation: "categories";
-            referencedColumns: ["id"];
-          },
           {
             foreignKeyName: "student_sessions_level_id_fkey";
             columns: ["level_id"];

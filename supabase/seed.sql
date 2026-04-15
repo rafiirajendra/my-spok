@@ -1,30 +1,14 @@
-insert into public.categories (id, name, description)
-values
-  (
-    '11111111-1111-1111-1111-111111111111',
-    'Aktivitas Harian',
-    'Kalimat sederhana tentang kegiatan sehari-hari.'
-  ),
-  (
-    '22222222-2222-2222-2222-222222222222',
-    'Sekolah',
-    'Kosakata ringan seputar kegiatan belajar di sekolah.'
-  )
-on conflict (id) do nothing;
-
-insert into public.levels (id, category_id, name, order_number)
+insert into public.levels (id, name, order_number)
 values
   (
     '33333333-3333-3333-3333-333333333331',
-    '11111111-1111-1111-1111-111111111111',
     'Level 1',
     1
   ),
   (
     '33333333-3333-3333-3333-333333333332',
-    '22222222-2222-2222-2222-222222222222',
-    'Level 1',
-    1
+    'Level 2',
+    2
   )
 on conflict (id) do nothing;
 

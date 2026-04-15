@@ -21,7 +21,6 @@ Spok Belajar adalah aplikasi web edukasi interaktif untuk membantu siswa tunarun
 
 1. Login.
 2. Mengelola konten pembelajaran:
-   - kategori
    - level
    - kata + media pendukung
    - latihan/soal

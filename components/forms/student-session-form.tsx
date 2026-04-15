@@ -1,21 +1,23 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { createStudentSessionAction } from "@/actions/student";
-import { Button } from "@/components/ui/button";
+import { useActionState } from "react";
+import {
+  createStudentSessionAction,
+  initialStudentSessionState,
+} from "@/actions/student";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
+import { SubmitButton } from "@/components/ui/submit-button";
 import { type StudentCatalog } from "@/types/app";
 
 export function StudentSessionForm({ catalog }: { catalog: StudentCatalog }) {
-  const [categoryId, setCategoryId] = useState(catalog.categories[0]?.id ?? "");
-  const levels = useMemo(
-    () => catalog.levels.filter((level) => level.category_id === categoryId),
-    [catalog.levels, categoryId],
+  const [state, formAction] = useActionState(
+    createStudentSessionAction,
+    initialStudentSessionState,
   );
 
   return (
-    <form action={createStudentSessionAction} className="grid gap-5">
+    <form action={formAction} className="grid gap-5">
       <div className="grid gap-2">
         <label className="text-sm font-bold" htmlFor="student_name">
           Nama siswa
@@ -31,30 +33,11 @@ export function StudentSessionForm({ catalog }: { catalog: StudentCatalog }) {
       </div>
 
       <div className="grid gap-2">
-        <label className="text-sm font-bold" htmlFor="category_id">
-          Pilih kategori
-        </label>
-        <Select
-          id="category_id"
-          name="category_id"
-          onChange={(event) => setCategoryId(event.target.value)}
-          required
-          value={categoryId}
-        >
-          {catalog.categories.map((category) => (
-            <option key={category.id} value={category.id}>
-              {category.name}
-            </option>
-          ))}
-        </Select>
-      </div>
-
-      <div className="grid gap-2">
         <label className="text-sm font-bold" htmlFor="level_id">
           Pilih level
         </label>
-        <Select id="level_id" key={categoryId} name="level_id" required>
-          {levels.map((level) => (
+        <Select id="level_id" name="level_id" required>
+          {catalog.levels.map((level) => (
             <option key={level.id} value={level.id}>
               {level.name}
             </option>
@@ -62,9 +45,13 @@ export function StudentSessionForm({ catalog }: { catalog: StudentCatalog }) {
         </Select>
       </div>
 
-      <Button className="w-full" size="lg" type="submit">
-        Mulai Latihan
-      </Button>
+      {state.errorMessage ? (
+        <div className="rounded-[24px] bg-danger/12 px-4 py-4 text-sm text-danger">
+          {state.errorMessage}
+        </div>
+      ) : null}
+
+      <SubmitButton className="w-full" label="Mulai Latihan" pendingLabel="Menyiapkan..." />
     </form>
   );
 }

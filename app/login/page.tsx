@@ -16,8 +16,8 @@ export default function LoginPage() {
             Login guru dan admin
           </h1>
           <p className="mt-4 max-w-xl text-base leading-8 text-foreground/75">
-            Masuk untuk mengelola kategori, level, kata, GIF bahasa isyarat, dan
-            memantau hasil belajar siswa.
+            Masuk untuk mengelola level, kata, GIF bahasa isyarat, dan memantau
+            hasil belajar siswa.
           </p>
           <div className="mt-8 rounded-[28px] bg-white/75 p-5">
             <p className="flex items-center gap-2 text-sm font-bold text-primary-strong">

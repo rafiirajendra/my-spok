@@ -48,7 +48,7 @@ export default async function PracticePage({
           Kembali
         </Link>
         <div className="rounded-full bg-white px-4 py-3 text-sm font-bold text-primary-strong card-shadow">
-          {payload.category?.name ?? "Kategori"} · {payload.level?.name ?? "Level"}
+          {payload.level?.name ?? "Level"}
         </div>
       </div>
 

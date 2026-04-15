@@ -11,16 +11,8 @@ begin
   end if;
 end $$;
 
-create table if not exists public.categories (
-  id uuid primary key default gen_random_uuid(),
-  name text not null,
-  description text,
-  created_at timestamptz not null default timezone('utc', now())
-);
-
 create table if not exists public.levels (
   id uuid primary key default gen_random_uuid(),
-  category_id uuid not null references public.categories(id) on delete cascade,
   name text not null,
   order_number integer not null check (order_number > 0),
   created_at timestamptz not null default timezone('utc', now())
@@ -55,7 +47,6 @@ create table if not exists public.student_sessions (
   id uuid primary key default gen_random_uuid(),
   student_name text not null,
   student_class text,
-  category_id uuid not null references public.categories(id) on delete restrict,
   level_id uuid not null references public.levels(id) on delete restrict,
   created_at timestamptz not null default timezone('utc', now())
 );
@@ -89,7 +80,6 @@ create table if not exists public.profiles (
   created_at timestamptz not null default timezone('utc', now())
 );
 
-create index if not exists levels_category_id_idx on public.levels(category_id);
 create index if not exists words_level_id_idx on public.words(level_id);
 create index if not exists exercises_level_id_idx on public.exercises(level_id);
 create index if not exists exercise_items_exercise_id_idx on public.exercise_items(exercise_id);

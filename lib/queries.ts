@@ -4,7 +4,6 @@ import { hasSupabaseEnv } from "@/lib/env";
 import {
   mockAttemptSummary,
   mockCatalog,
-  mockCategories,
   mockDashboardResults,
   mockDashboardStats,
   mockExerciseItems,
@@ -17,7 +16,6 @@ import {
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type {
   AttemptResultSummary,
-  Category,
   DashboardResultRow,
   DashboardStats,
   Exercise,
@@ -39,13 +37,9 @@ export async function getStudentCatalog(): Promise<StudentCatalog> {
   }
 
   const supabase = await createSupabaseServerClient();
-  const [{ data: categories }, { data: levels }] = await Promise.all([
-    supabase.from("categories").select("*").order("name"),
-    supabase.from("levels").select("*").order("order_number"),
-  ]);
+  const { data: levels } = await supabase.from("levels").select("*").order("order_number");
 
   return {
-    categories: (categories as Category[]) ?? [],
     levels: (levels as Level[]) ?? [],
   };
 }
@@ -77,9 +71,7 @@ export async function getPracticePayload(sessionId: string): Promise<PracticePay
   }
 
   const supabase = await createSupabaseServerClient();
-  const [{ data: category }, { data: level }, { data: exercise }, { data: words }] =
-    await Promise.all([
-    supabase.from("categories").select("*").eq("id", session.category_id).single(),
+  const [{ data: level }, { data: exercise }, { data: words }] = await Promise.all([
     supabase.from("levels").select("*").eq("id", session.level_id).single(),
     supabase
       .from("exercises")
@@ -94,7 +86,6 @@ export async function getPracticePayload(sessionId: string): Promise<PracticePay
   if (!exercise) {
     return {
       session,
-      category: (category as Category | null) ?? null,
       level: (level as Level | null) ?? null,
       exercise: null,
       items: [],
@@ -113,7 +104,6 @@ export async function getPracticePayload(sessionId: string): Promise<PracticePay
 
   return {
     session,
-    category: (category as Category | null) ?? null,
     level: (level as Level | null) ?? null,
     exercise: exercise as Exercise,
     items: asExerciseItems(items).map((item) => ({
@@ -168,10 +158,11 @@ export async function getAttemptResult(attemptId: string): Promise<AttemptResult
     return null;
   }
 
-  const [{ data: category }, { data: level }] = await Promise.all([
-    supabase.from("categories").select("*").eq("id", session.category_id).single(),
-    supabase.from("levels").select("*").eq("id", session.level_id).single(),
-  ]);
+  const { data: level } = await supabase
+    .from("levels")
+    .select("*")
+    .eq("id", session.level_id)
+    .single();
 
   const answerRows = (answers ?? []) as Array<{
     id: string;
@@ -202,7 +193,6 @@ export async function getAttemptResult(attemptId: string): Promise<AttemptResult
     attempt: attempt,
     session: session as StudentSession,
     exercise: (exercise as Exercise | null) ?? null,
-    category: (category as Category | null) ?? null,
     level: (level as Level | null) ?? null,
     answers: answerRows.map((answer) => {
       const prompt = promptMap.get(answer.exercise_item_id) ?? null;
@@ -222,8 +212,7 @@ export async function getDashboardStats(): Promise<DashboardStats> {
   }
 
   const supabase = await createSupabaseServerClient();
-  const [categories, levels, words, exercises, attempts] = await Promise.all([
-    supabase.from("categories").select("*", { count: "exact", head: true }),
+  const [levels, words, exercises, attempts] = await Promise.all([
     supabase.from("levels").select("*", { count: "exact", head: true }),
     supabase.from("words").select("*", { count: "exact", head: true }),
     supabase.from("exercises").select("*", { count: "exact", head: true }),
@@ -234,20 +223,11 @@ export async function getDashboardStats(): Promise<DashboardStats> {
   ]);
 
   return {
-    categories: categories.count ?? 0,
     levels: levels.count ?? 0,
     words: words.count ?? 0,
     exercises: exercises.count ?? 0,
     recentAttempts: attempts.count ?? 0,
   };
-}
-
-export async function getCategories() {
-  if (!hasSupabaseEnv()) return mockCategories;
-
-  const supabase = await createSupabaseServerClient();
-  const { data } = await supabase.from("categories").select("*").order("name");
-  return (data as Category[]) ?? [];
 }
 
 export async function getLevels() {
@@ -288,15 +268,19 @@ export async function getExerciseItems() {
 
 export async function getResults(search?: {
   q?: string;
-  categoryId?: string;
   levelId?: string;
 }) {
   if (!hasSupabaseEnv()) {
-    return mockDashboardResults.filter((row) =>
-      search?.q
+    return mockDashboardResults.filter((row) => {
+      const matchesQuery = search?.q
         ? row.student_name.toLowerCase().includes(search.q.toLowerCase())
-        : true,
-    );
+        : true;
+      const matchesLevel = search?.levelId
+        ? mockLevels.find((item) => item.id === search.levelId)?.name === row.level_name
+        : true;
+
+      return matchesQuery && matchesLevel;
+    });
   }
 
   const supabase = await createSupabaseServerClient();
@@ -315,29 +299,22 @@ export async function getResults(search?: {
   ]);
 
   const levelIds = [...new Set((sessions ?? []).map((session) => session.level_id))];
-  const categoryIds = [...new Set((sessions ?? []).map((session) => session.category_id))];
-  const [{ data: levels }, { data: categories }] = await Promise.all([
-    supabase.from("levels").select("*").in("id", levelIds),
-    supabase.from("categories").select("*").in("id", categoryIds),
-  ]);
+  const { data: levels } = await supabase.from("levels").select("*").in("id", levelIds);
 
   const sessionMap = new Map((sessions ?? []).map((item) => [item.id, item]));
   const exerciseMap = new Map((exercises ?? []).map((item) => [item.id, item]));
   const levelMap = new Map((levels ?? []).map((item) => [item.id, item]));
-  const categoryMap = new Map((categories ?? []).map((item) => [item.id, item]));
 
   return attemptRows
     .map((attempt) => {
       const session = sessionMap.get(attempt.student_session_id);
       const exercise = exerciseMap.get(attempt.exercise_id);
       const level = session ? levelMap.get(session.level_id) : null;
-      const category = session ? categoryMap.get(session.category_id) : null;
 
       return {
         attempt_id: attempt.id,
         student_name: session?.student_name ?? "Tanpa nama",
         student_class: session?.student_class ?? null,
-        category_name: category?.name ?? null,
         level_name: level?.name ?? exercise?.title ?? null,
         score: attempt.score,
         correct_answers: attempt.correct_answers,
@@ -352,13 +329,10 @@ export async function getResults(search?: {
             .includes(search.q.toLowerCase())
         : true;
 
-      const matchesCategory = search?.categoryId
-        ? categories?.find((item) => item.id === search.categoryId)?.name === row.category_name
-        : true;
       const matchesLevel = search?.levelId
         ? levels?.find((item) => item.id === search.levelId)?.name === row.level_name
         : true;
 
-      return matchesQuery && matchesCategory && matchesLevel;
+      return matchesQuery && matchesLevel;
     });
 }

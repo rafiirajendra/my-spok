@@ -8,20 +8,31 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 const studentSessionSchema = z.object({
   student_name: z.string().min(2, "Nama minimal 2 karakter."),
   student_class: z.string().optional(),
-  category_id: z.string().min(1, "Kategori wajib dipilih."),
   level_id: z.string().min(1, "Level wajib dipilih."),
 });
 
-export async function createStudentSessionAction(formData: FormData) {
+export type StudentSessionActionState = {
+  errorMessage: string | null;
+};
+
+export const initialStudentSessionState: StudentSessionActionState = {
+  errorMessage: null,
+};
+
+export async function createStudentSessionAction(
+  _previousState: StudentSessionActionState,
+  formData: FormData,
+): Promise<StudentSessionActionState> {
   const parsed = studentSessionSchema.safeParse({
     student_name: formData.get("student_name"),
     student_class: formData.get("student_class"),
-    category_id: formData.get("category_id"),
     level_id: formData.get("level_id"),
   });
 
   if (!parsed.success) {
-    redirect("/student");
+    return {
+      errorMessage: parsed.error.issues[0]?.message ?? "Data siswa belum lengkap.",
+    };
   }
 
   if (!hasSupabaseEnv()) {
@@ -29,20 +40,22 @@ export async function createStudentSessionAction(formData: FormData) {
   }
 
   const supabase = await createSupabaseServerClient();
-  const { data, error } = await supabase
+  const sessionId = crypto.randomUUID();
+  const { error } = await supabase
     .from("student_sessions")
     .insert({
+      id: sessionId,
       student_name: parsed.data.student_name,
       student_class: parsed.data.student_class || null,
-      category_id: parsed.data.category_id,
       level_id: parsed.data.level_id,
-    })
-    .select("id")
-    .single();
+    });
 
-  if (error || !data) {
-    redirect("/student");
+  if (error) {
+    console.error("createStudentSessionAction failed", error);
+    return {
+      errorMessage: "Latihan belum berhasil dimulai. Coba lagi sebentar ya.",
+    };
   }
 
-  redirect(`/student/practice/${data.id}`);
+  redirect(`/student/practice/${sessionId}`);
 }

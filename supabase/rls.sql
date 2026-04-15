@@ -13,7 +13,6 @@ as $$
   );
 $$;
 
-alter table public.categories enable row level security;
 alter table public.levels enable row level security;
 alter table public.words enable row level security;
 alter table public.exercises enable row level security;
@@ -22,21 +21,6 @@ alter table public.student_sessions enable row level security;
 alter table public.attempts enable row level security;
 alter table public.attempt_answers enable row level security;
 alter table public.profiles enable row level security;
-
-drop policy if exists "public read categories" on public.categories;
-create policy "public read categories"
-on public.categories
-for select
-to anon, authenticated
-using (true);
-
-drop policy if exists "teacher manage categories" on public.categories;
-create policy "teacher manage categories"
-on public.categories
-for all
-to authenticated
-using (public.is_teacher())
-with check (public.is_teacher());
 
 drop policy if exists "public read levels" on public.levels;
 create policy "public read levels"
@@ -112,6 +96,13 @@ for select
 to authenticated
 using (public.is_teacher());
 
+drop policy if exists "public read student sessions" on public.student_sessions;
+create policy "public read student sessions"
+on public.student_sessions
+for select
+to anon, authenticated
+using (true);
+
 drop policy if exists "students insert attempts" on public.attempts;
 create policy "students insert attempts"
 on public.attempts
@@ -126,6 +117,13 @@ for select
 to authenticated
 using (public.is_teacher());
 
+drop policy if exists "public read attempts" on public.attempts;
+create policy "public read attempts"
+on public.attempts
+for select
+to anon, authenticated
+using (true);
+
 drop policy if exists "students insert attempt answers" on public.attempt_answers;
 create policy "students insert attempt answers"
 on public.attempt_answers
@@ -139,6 +137,13 @@ on public.attempt_answers
 for select
 to authenticated
 using (public.is_teacher());
+
+drop policy if exists "public read attempt answers" on public.attempt_answers;
+create policy "public read attempt answers"
+on public.attempt_answers
+for select
+to anon, authenticated
+using (true);
 
 drop policy if exists "users read own profile" on public.profiles;
 create policy "users read own profile"
