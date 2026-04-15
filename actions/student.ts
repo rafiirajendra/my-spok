@@ -11,12 +11,8 @@ const studentSessionSchema = z.object({
   level_id: z.string().min(1, "Level wajib dipilih."),
 });
 
-export type StudentSessionActionState = {
+type StudentSessionActionState = {
   errorMessage: string | null;
-};
-
-export const initialStudentSessionState: StudentSessionActionState = {
-  errorMessage: null,
 };
 
 export async function createStudentSessionAction(

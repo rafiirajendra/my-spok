@@ -1,14 +1,15 @@
 "use client";
 
 import { useActionState } from "react";
-import {
-  createStudentSessionAction,
-  initialStudentSessionState,
-} from "@/actions/student";
+import { createStudentSessionAction } from "@/actions/student";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { type StudentCatalog } from "@/types/app";
+
+const initialStudentSessionState = {
+  errorMessage: null,
+};
 
 export function StudentSessionForm({ catalog }: { catalog: StudentCatalog }) {
   const [state, formAction] = useActionState(
