@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import {
-  closestCenter,
+  closestCorners,
   DndContext,
   DragOverlay,
   PointerActivationConstraint,
@@ -16,8 +16,8 @@ import {
 } from "@dnd-kit/core";
 import {
   SortableContext,
-  rectSortingStrategy,
   sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { useRouter } from "next/navigation";
 import { CheckCircle2, RotateCcw, Trophy } from "lucide-react";
@@ -187,7 +187,7 @@ export function ExercisePlayer({
   return (
     <>
       <DndContext
-        collisionDetection={closestCenter}
+        collisionDetection={closestCorners}
         onDragCancel={handleDragCancel}
         onDragEnd={handleDragEnd}
         onDragStart={handleDragStart}
@@ -243,7 +243,7 @@ export function ExercisePlayer({
               <DroppableArea className="grid gap-3" id="answer">
                 <SortableContext
                   items={answerWords.map((word) => word.id)}
-                  strategy={rectSortingStrategy}
+                  strategy={verticalListSortingStrategy}
                 >
                   <div className="grid gap-3">
                     {answerWords.length ? (
@@ -327,7 +327,7 @@ export function ExercisePlayer({
             <DroppableArea className="grid gap-3" id="bank">
               <SortableContext
                 items={bankWords.map((word) => word.id)}
-                strategy={rectSortingStrategy}
+                strategy={verticalListSortingStrategy}
               >
                 <div className="grid gap-3">
                   {bankWords.map((word) => (
