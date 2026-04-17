@@ -82,6 +82,7 @@ export default async function PracticePage({
         exerciseId={payload.exercise.id}
         instruction={payload.exercise.instruction ?? "Susun kata menjadi kalimat yang benar."}
         items={payload.items}
+        levelName={payload.level?.name ?? null}
         session={payload.session}
         title={payload.exercise.title}
       />

@@ -22,6 +22,12 @@ import {
 import { useRouter } from "next/navigation";
 import { CheckCircle2, RotateCcw, Trophy } from "lucide-react";
 import { useExercisePlayer } from "@/hooks/use-exercise-player";
+import {
+  STUDENT_ATTEMPT_SNAPSHOT_COOKIE,
+  STUDENT_FLOW_COOKIE_MAX_AGE,
+  buildAttemptResultSnapshot,
+  serializeAttemptResultSnapshot,
+} from "@/lib/student-flow-fallback";
 import { scoreToLabel } from "@/lib/utils";
 import type { ExerciseItem, StudentSession } from "@/types/app";
 import { Button } from "@/components/ui/button";
@@ -59,6 +65,7 @@ function DroppableArea({
 type ExercisePlayerProps = {
   session: StudentSession;
   exerciseId: string;
+  levelName?: string | null;
   title: string;
   instruction: string;
   items: ExerciseItem[];
@@ -67,6 +74,7 @@ type ExercisePlayerProps = {
 export function ExercisePlayer({
   session,
   exerciseId,
+  levelName,
   title,
   instruction,
   items,
@@ -176,6 +184,23 @@ export function ExercisePlayer({
       }
 
       const data = (await response.json()) as { attemptId: string };
+      const resultSnapshot = buildAttemptResultSnapshot({
+        attemptId: data.attemptId,
+        exerciseId,
+        exerciseTitle: title,
+        levelName,
+        session,
+        items,
+        answers: drafts.map((draft) => ({
+          exercise_item_id: draft.exercise_item_id,
+          student_answer: draft.student_answer,
+          is_correct: draft.is_correct,
+          expected:
+            items.find((item) => item.id === draft.exercise_item_id)?.sentence_answer ?? "",
+        })),
+      });
+
+      document.cookie = `${STUDENT_ATTEMPT_SNAPSHOT_COOKIE}=${serializeAttemptResultSnapshot(resultSnapshot)}; Max-Age=${STUDENT_FLOW_COOKIE_MAX_AGE}; Path=/; SameSite=Lax`;
       router.push(`/student/results/${data.attemptId}`);
     });
   }

@@ -1,8 +1,14 @@
 "use server";
 
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { hasSupabaseEnv } from "@/lib/env";
+import {
+  STUDENT_FLOW_COOKIE_MAX_AGE,
+  STUDENT_SESSION_SNAPSHOT_COOKIE,
+  serializeStudentSessionSnapshot,
+} from "@/lib/student-flow-fallback";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 const studentSessionSchema = z.object({
@@ -37,6 +43,7 @@ export async function createStudentSessionAction(
 
   const supabase = await createSupabaseServerClient();
   const sessionId = crypto.randomUUID();
+  const createdAt = new Date().toISOString();
   const { error } = await supabase
     .from("student_sessions")
     .insert({
@@ -52,6 +59,24 @@ export async function createStudentSessionAction(
       errorMessage: "Latihan belum berhasil dimulai. Coba lagi sebentar ya.",
     };
   }
+
+  const cookieStore = await cookies();
+  cookieStore.set(
+    STUDENT_SESSION_SNAPSHOT_COOKIE,
+    serializeStudentSessionSnapshot({
+      id: sessionId,
+      student_name: parsed.data.student_name,
+      student_class: parsed.data.student_class || null,
+      level_id: parsed.data.level_id,
+      created_at: createdAt,
+    }),
+    {
+      httpOnly: true,
+      maxAge: STUDENT_FLOW_COOKIE_MAX_AGE,
+      path: "/",
+      sameSite: "lax",
+    },
+  );
 
   redirect(`/student/practice/${sessionId}`);
 }

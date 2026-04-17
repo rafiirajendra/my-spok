@@ -1,5 +1,6 @@
 import "server-only";
 
+import { cookies } from "next/headers";
 import { hasSupabaseEnv } from "@/lib/env";
 import {
   mockAttemptSummary,
@@ -13,6 +14,12 @@ import {
   mockSession,
   mockWords,
 } from "@/lib/mock-data";
+import {
+  STUDENT_ATTEMPT_SNAPSHOT_COOKIE,
+  STUDENT_SESSION_SNAPSHOT_COOKIE,
+  parseAttemptResultSnapshot,
+  parseStudentSessionSnapshot,
+} from "@/lib/student-flow-fallback";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type {
   AttemptResultSummary,
@@ -29,6 +36,24 @@ import type {
 
 function asExerciseItems(data: unknown): ExerciseItem[] {
   return (data as ExerciseItem[]) ?? [];
+}
+
+async function getSessionSnapshotFallback(sessionId: string) {
+  const cookieStore = await cookies();
+  const snapshot = parseStudentSessionSnapshot(
+    cookieStore.get(STUDENT_SESSION_SNAPSHOT_COOKIE)?.value,
+  );
+
+  return snapshot?.id === sessionId ? snapshot : null;
+}
+
+async function getAttemptSnapshotFallback(attemptId: string) {
+  const cookieStore = await cookies();
+  const snapshot = parseAttemptResultSnapshot(
+    cookieStore.get(STUDENT_ATTEMPT_SNAPSHOT_COOKIE)?.value,
+  );
+
+  return snapshot?.attempt.id === attemptId ? snapshot : null;
 }
 
 export async function getStudentCatalog(): Promise<StudentCatalog> {
@@ -54,9 +79,9 @@ export async function getStudentSession(sessionId: string) {
     .from("student_sessions")
     .select("*")
     .eq("id", sessionId)
-    .single();
+    .maybeSingle();
 
-  return (data as StudentSession | null) ?? null;
+  return (data as StudentSession | null) ?? (await getSessionSnapshotFallback(sessionId));
 }
 
 export async function getPracticePayload(sessionId: string): Promise<PracticePayload | null> {
@@ -156,10 +181,10 @@ export async function getAttemptResult(attemptId: string): Promise<AttemptResult
     .from("attempts")
     .select("*")
     .eq("id", attemptId)
-    .single();
+    .maybeSingle();
 
   if (!attempt) {
-    return null;
+    return getAttemptSnapshotFallback(attemptId);
   }
 
   const [{ data: session }, { data: exercise }, { data: answers }] = await Promise.all([
@@ -167,7 +192,7 @@ export async function getAttemptResult(attemptId: string): Promise<AttemptResult
       .from("student_sessions")
       .select("*")
       .eq("id", attempt.student_session_id)
-      .single(),
+      .maybeSingle(),
     supabase.from("exercises").select("*").eq("id", attempt.exercise_id).single(),
     supabase
       .from("attempt_answers")
@@ -177,14 +202,14 @@ export async function getAttemptResult(attemptId: string): Promise<AttemptResult
   ]);
 
   if (!session) {
-    return null;
+    return getAttemptSnapshotFallback(attemptId);
   }
 
   const { data: level } = await supabase
     .from("levels")
     .select("*")
     .eq("id", session.level_id)
-    .single();
+    .maybeSingle();
 
   const answerRows = (answers ?? []) as Array<{
     id: string;
@@ -194,6 +219,10 @@ export async function getAttemptResult(attemptId: string): Promise<AttemptResult
     is_correct: boolean;
     created_at: string;
   }>;
+
+  if (!answerRows.length) {
+    return getAttemptSnapshotFallback(attemptId);
+  }
 
   const itemIds = answerRows.map((row) => row.exercise_item_id);
   const { data: prompts } = await supabase
